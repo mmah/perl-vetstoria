@@ -1,0 +1,29 @@
+#!/usr/bin/perl -w
+
+use strict;
+use Vetstoria;
+use ShortURL;
+
+unless (scalar(@ARGV) == 3) {
+   print "ERR: Usage is $0 {hospital_code} {pms_client_code} {pms_client_code}\n";
+   exit(1);
+}
+
+my ($hospital, $client, $patient) = @ARGV;
+
+my $vetstoria = Vetstoria->new();
+my $shortener = ShortURL->new();
+
+my $long_url = $vetstoria->CreateURL($hospital, $client, $patient);
+
+#print "$long_url\n";
+
+my $short_url = $shortener->Get($long_url);
+
+unless (defined $short_url) {
+   print "ERR - Unable to get short URL\n";
+} else {
+   print "$short_url\n";
+}
+
+exit()
