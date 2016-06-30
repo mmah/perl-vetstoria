@@ -1,0 +1,19 @@
+#!/usr/bin/perl -w
+
+use strict;
+use Vetstoria;
+
+unless (scalar(@ARGV) == 3) {
+   print "ERR: Usage is $0 {hospital_code} {pms_client_code} {pms_client_code}\n";
+   exit(1);
+}
+
+my ($hospital, $client, $patient) = @ARGV;
+
+my $vetstoria = Vetstoria->new();
+
+my $long_url = $vetstoria->CreateURL($hospital, $client, $patient);
+
+print "$long_url";
+
+exit()
