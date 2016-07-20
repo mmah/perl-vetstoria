@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
+use lib '../lib';
 use Vetstoria;
 
 my $vetstoria = Vetstoria->new();
