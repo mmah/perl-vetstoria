@@ -6,7 +6,8 @@ use Vetstoria;
 
 my $vetstoria = Vetstoria->new();
 
-my $url = $vetstoria->CreateURL("HHHHHHH", "CCCCCCCC", "PPPPPPP");
+#my $url = $vetstoria->CreateURL("HHHHHHH", "CCCCCCCC", "PPPPPPP");
+my $url = $vetstoria->CreateURL("577bbe97a7115", "4051", "");
 
 print "\n$url\n\n";
 
