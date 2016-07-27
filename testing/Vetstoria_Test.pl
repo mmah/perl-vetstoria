@@ -6,11 +6,16 @@ use Vetstoria;
 
 my $vetstoria = Vetstoria->new();
 
-#my $url = $vetstoria->CreateURL("HHHHHHH", "CCCCCCCC", "PPPPPPP");
-my $url = $vetstoria->CreateURL("577bbe97a7115", "4051", "");
+my @TestURLs = ();
+#push @TestURLs, ( $vetstoria->CreateURL("HHHHHHH", "CCCCCCCC", "PPPPPPP"));
+push @TestURLs, ( $vetstoria->CreateURL("577bbe97a7115", "4051", ""));
+push @TestURLs, ( $vetstoria->CreateURL("577bbe97a7115", "898", [ "18844", "38274" ]));
+push @TestURLs, ( $vetstoria->CreateURL("577bbe97a7115", "9007", [ "23500" ]));
+push @TestURLs, ( $vetstoria->CreateURL("577bbe97a7115", "4051", [  ]));
 
-print "\n$url\n\n";
+foreach my $url (@TestURLs) {
+   my($hosp, $client, $patient) = $vetstoria->DecodeURL($url);
 
-my($hosp, $client, $patient) = $vetstoria->DecodeURL($url);
-
-print "Hospital = '$hosp'\nClient='$client'\nPatient='$patient'\n";
+   print "Hospital = '$hosp'\nClient='$client'\nPatient='$patient'\n";
+   print "$url\n\n";
+}

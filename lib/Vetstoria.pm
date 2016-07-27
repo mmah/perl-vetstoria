@@ -32,11 +32,29 @@ sub new {
 #=======================================================================
 
 
+#
+# CreateURL - Create a vetstoria URL for the given hospital, client, and 
+#    patient(s).   The patient argument may be a single patient id as a
+#    scalar or a reference to an array of patient ids.
+#    
+#    The $HospitalSiteHash is the code supplied by Vetstoria and the 
+#    client and patient ids are the PMS ids.
+#    
 sub CreateURL {
    my ($self, $HospitalSiteHash, $PMS_Client_Id, $PMS_Patient_Id) = @_;
    
+   # If the patient id is not already an array reference, make it one...
+   unless (ref($PMS_Patient_Id) eq 'ARRAY') {
+      $PMS_Patient_Id = [ $PMS_Patient_Id ];
+   }
+   
+   my @patient_list = ();
+   foreach my $pet (@{$PMS_Patient_Id}) {
+      push @patient_list, ("{ \"p_id\": \"$pet\" }") if $pet; 
+   }
+   
    my $url = $VetstoriaBase . $HospitalSiteHash . '/';
-   my $json = "{\"c_id\":\"$PMS_Client_Id\", \"p_id\":\"$PMS_Patient_Id\"}";
+   my $json = "{\"c_id\":\"$PMS_Client_Id\", \"pets\":[ " . join(', ', @patient_list) . " ]}";
    print "json: $json\n" if $Debugging;
    $json = encode_base64url($json);
    print "json base 64: $json\n" if $Debugging;
@@ -50,6 +68,9 @@ sub CreateURL {
 #=======================================================================
 
 
+#
+# DecodeURL - Unpack a supplied Vetstoria URL.
+#
 sub DecodeURL {
    my ($self, $url) = @_;
    
@@ -63,7 +84,7 @@ sub DecodeURL {
    print "encoded json base 64= $json\n" if $Debugging;
    $json = decode_base64url($json);
    print "json = $json\n" if $Debugging;
-   $json =~ /"c_id":"([^"]*)", "p_id":"([^"]*?)"/;
+   $json =~ /"c_id":"([^"]*)", "pets":\[([^\]]*)\]/;
    return ($hospital, $1, $2);
    
 }
