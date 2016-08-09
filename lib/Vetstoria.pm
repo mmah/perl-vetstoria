@@ -112,13 +112,13 @@ sub DecodeURL {
    
    $json =~ s/"c_id":"([^"]*)\"//;
    my $client_id = $1;
-   print "After client extraction '$json'\n";
+   print "After client extraction '$json'\n" if $Debugging;
    
    my $pets = '';
    if ($json =~ s/\"pets\":\[([^\]]*)]//) {
       $pets = $1;
    }
-   print "After pet extraction '$json'\n";
+   print "After pet extraction '$json'\n" if $Debugging;
    
    
    return ($hospital, $client_id, $pets);
