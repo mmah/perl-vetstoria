@@ -11,6 +11,7 @@ my $VetstoriaBase = $VetstoriaBase_Test;
 
 my $EncryptionKey = 'aG@j33K`,2A<2ZsEZK#k\qL9SWd~W}u#J6W"^6$}M@g#!\5}(^"Dtx%3';
 my $Debugging = 0;
+my $Use_V2 = 0;
 
 sub new {
    my ($class) = @_;
@@ -47,6 +48,8 @@ sub CreateURL {
    my ($self, $HospitalSiteHash, $PMS_Client_Id, $PMS_Patient_Id) = @_;
 
    my @patient_list = ();
+   my @patient_ids = ();
+   my @reason_ids = ();
    
    # If the patient id is an array reference...
    if (ref($PMS_Patient_Id) eq 'ARRAY') {
@@ -55,6 +58,8 @@ sub CreateURL {
       foreach my $pet (@{$PMS_Patient_Id}) {
          if (length($pet) > 0) {
             my @fields = split(':', $pet);
+            push @patient_ids, ($fields[0]);
+            push @reason_ids, ($fields[1]);
             if (scalar(@fields) > 1) {
                push @patient_list, ("{ \"p_id\" : \"$fields[0]\", \"rfa_id\":\"$fields[1]\" }"); 
             } else  {
@@ -68,10 +73,16 @@ sub CreateURL {
       }
    }
    
+   my $pet_element = '';
+   if ($Use_V2) {
+      $pet_element = \"pets\":[ " . join(', ', @patient_list) . " ]" if scalar(@patient_list) > 0;
+   } else {
+      $pet_element = "\"p_id\":\"" . shift(@patient_ids) . "\"";
+   }
       
    my $url = $VetstoriaBase . $HospitalSiteHash . '/';
    my $json = "{\"c_id\":\"$PMS_Client_Id\"";
-   $json .= ", \"pets\":[ " . join(', ', @patient_list) . " ]" if scalar(@patient_list) > 0;
+   $json .= ", $pet_element ";
    $json .= " }";
    print "json: $json\n" if $Debugging;
    $json = encode_base64url($json);
@@ -115,8 +126,14 @@ sub DecodeURL {
    print "After client extraction '$json'\n" if $Debugging;
    
    my $pets = '';
-   if ($json =~ s/\"pets\":\[([^\]]*)]//) {
-      $pets = $1;
+   if ($Use_V2) {
+      if ($json =~ s/\"pets\":\[([^\]]*)]//) {
+         $pets = $1;
+      }
+   } else {
+      if ($json =~ s/\"p_id\":\"([^\"]*)\"//) {
+          $pets = $1;
+      }
    }
    print "After pet extraction '$json'\n" if $Debugging;
    
