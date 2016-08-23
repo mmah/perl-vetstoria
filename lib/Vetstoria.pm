@@ -6,8 +6,8 @@ use MIME::Base64 qw( encode_base64 decode_base64 encode_base64url decode_base64u
 use Crypt::CBC;
  
 my $VetstoriaBase_Test = 'https://booking-qa.vetstoria.com/';
-my $VetstoriaBase_Prod = 'https://nva.vetstoria.com';
-my $VetstoriaBase = $VetstoriaBase_Test;
+my $VetstoriaBase_Prod = 'https://nva.vetstoria.com/';
+my $VetstoriaBase = $VetstoriaBase_Prod;
 
 my $EncryptionKey = 'aG@j33K`,2A<2ZsEZK#k\qL9SWd~W}u#J6W"^6$}M@g#!\5}(^"Dtx%3';
 my $Debugging = 0;
