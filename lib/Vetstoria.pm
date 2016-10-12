@@ -11,7 +11,8 @@ my $VetstoriaBase = $VetstoriaBase_Prod;
 
 my $EncryptionKey = 'aG@j33K`,2A<2ZsEZK#k\qL9SWd~W}u#J6W"^6$}M@g#!\5}(^"Dtx%3';
 my $Debugging = 0;
-my $Use_V2 = 0;
+my $Use_V2 = 1;
+my $Include_Reason = 0;
 
 sub new {
    my ($class) = @_;
@@ -56,12 +57,17 @@ sub CreateURL {
       # Step through the array and split the patient ids into 
       #    patient_id and reference code if a colon is found...
       foreach my $pet (@{$PMS_Patient_Id}) {
+         #print "Examining pet $pet\n";
          if (length($pet) > 0) {
             my @fields = split(':', $pet);
             push @patient_ids, ($fields[0]);
             push @reason_ids, ($fields[1]);
             if (scalar(@fields) > 1) {
-               push @patient_list, ("{ \"p_id\" : \"$fields[0]\", \"rfa_id\":\"$fields[1]\" }"); 
+               if ($Include_Reason) {
+                  push @patient_list, ("{ \"p_id\" : \"$fields[0]\", \"rfa_id\":\"$fields[1]\" }"); 
+               } else {
+                  push @patient_list, ("{ \"p_id\" : \"$fields[0]\" }"); 
+               }
             } else  {
                push @patient_list, ("{ \"p_id\" : \"$pet\" }"); 
             }
@@ -75,10 +81,11 @@ sub CreateURL {
    
    my $pet_element = '';
    if ($Use_V2) {
-      $pet_element = \"pets\":[ " . join(', ', @patient_list) . " ]" if scalar(@patient_list) > 0;
+      $pet_element = "\"pets\":[ " . join(', ', @patient_list) . " ]" if scalar(@patient_list) > 0;
    } else {
       $pet_element = "\"p_id\":\"" . shift(@patient_ids) . "\"";
    }
+   #print "Finished pet_element '$pet_element'\n";
       
    my $url = $VetstoriaBase . $HospitalSiteHash . '/';
    my $json = "{\"c_id\":\"$PMS_Client_Id\"";
