@@ -21,7 +21,7 @@ sub new {
       $Debugging       = $options->{debug}          if (exists($options->{debug}));
       $Use_V2          = $options->{use_v2}         if (exists($options->{use_v2}));
       $Include_Reason  = $options->{include_reason} if (exists($options->{include_reason}));
-      if (exists($options->{TestMode}) && ($options->{TestMode})) {
+      if (exists($options->{test}) && ($options->{test})) {
          $VetstoriaBase = $VetstoriaBase_Test;
       }
    }
