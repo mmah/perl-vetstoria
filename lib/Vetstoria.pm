@@ -48,9 +48,8 @@ sub new {
 sub CreateURL {
    my ($self, $HospitalSiteHash, $PMS_Client_Id, $PMS_Patient_Id) = @_;
 
-   my @patient_list = ();
-   my @patient_ids = ();
-   my @reason_ids = ();
+   my @patient_list = (); # The list of patients to be included
+   my %patient_ids = ();  # This is used to check for duplicate patients or patient:reason codes
    
    # If the patient id is an array reference...
    if (ref($PMS_Patient_Id) eq 'ARRAY') {
@@ -60,16 +59,23 @@ sub CreateURL {
          #print "Examining pet $pet\n";
          if (length($pet) > 0) {
             my @fields = split(':', $pet);
-            push @patient_ids, ($fields[0]);
-            push @reason_ids, ($fields[1]);
             if (scalar(@fields) > 1) {
                if ($Include_Reason) {
-                  push @patient_list, ("{ \"p_id\" : \"$fields[0]\", \"rfa_id\":\"$fields[1]\" }"); 
+                  unless (exists($patient_ids{"$fields[0]:$fields[1]"})) {
+                     $patient_ids{"$fields[0]:$fields[1]"} = 1;
+                     push @patient_list, ("{ \"p_id\" : \"$fields[0]\", \"rfa_id\":\"$fields[1]\" }"); 
+                  }
                } else {
-                  push @patient_list, ("{ \"p_id\" : \"$fields[0]\" }"); 
+                  unless (exists($patient_ids{$fields[0]})) {
+                     $patient_ids{$fields[0]} = 1;
+                     push @patient_list, ("{ \"p_id\" : \"$fields[0]\" }"); 
+                  }
                }
             } else  {
-               push @patient_list, ("{ \"p_id\" : \"$pet\" }"); 
+               unless (exists($patient_ids{$fields[0]})) {
+                  $patient_ids{$fields[0]} = 1;
+                  push @patient_list, ("{ \"p_id\" : \"$fields[0]\" }"); 
+              }
             }
          }
       }
@@ -83,7 +89,7 @@ sub CreateURL {
    if ($Use_V2) {
       $pet_element = "\"pets\":[ " . join(', ', @patient_list) . " ]" if scalar(@patient_list) > 0;
    } else {
-      $pet_element = "\"p_id\":\"" . shift(@patient_ids) . "\"";
+      $pet_element = "\"p_id\":\"" . shift(keys(%patient_ids)) . "\"";
    }
    #print "Finished pet_element '$pet_element'\n";
       
