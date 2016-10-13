@@ -1,31 +1,32 @@
 #!/usr/bin/perl -w
 
-use strict;
-
 package Vetstoria;
 
 use strict;
 use warnings;
 use MIME::Base64 qw( encode_base64 decode_base64 encode_base64url decode_base64url );
 use Crypt::CBC;
- 
- 
-#
-# NOTES:
-#  - This routine is currently set up for Vetstoria format 1
-#  - When installing in production be sure to change the assignment to
-#       $VetstoriaBase to assign $VetstoriaBase_Prod
-#  - When testing assign the variable $VetstoriaBase_Test
-#
+
 my $VetstoriaBase_Test = 'https://booking-qa.vetstoria.com/';
 my $VetstoriaBase_Prod = 'https://nva.vetstoria.com/';
-my $VetstoriaBase = $VetstoriaBase_Test;
+my $VetstoriaBase = $VetstoriaBase_Prod;
 
 my $EncryptionKey = 'aG@j33K`,2A<2ZsEZK#k\qL9SWd~W}u#J6W"^6$}M@g#!\5}(^"Dtx%3';
 my $Debugging = 0;
+my $Use_V2 = 1;
+my $Include_Reason = 0;
 
 sub new {
-   my ($class) = @_;
+   my ($class, $options) = @_;
+
+   if (defined($options)) {
+      $Debugging       = $options->{debug}          if (exists($options->{debug}));
+      $Use_V2          = $options->{use_v2}         if (exists($options->{use_v2}));
+      $Include_Reason  = $options->{include_reason} if (exists($options->{include_reason}));
+      if (exists($options->{test}) && ($options->{test})) {
+         $VetstoriaBase = $VetstoriaBase_Test;
+      }
+   }
 
    my $self = {
       cipher    => Crypt::CBC->new( -key            => $EncryptionKey,
@@ -46,7 +47,7 @@ sub new {
 
 sub CreateURL {
    my ($self, $HospitalSiteHash, $PMS_Client_Id, $PMS_Patient_Id) = @_;
-   
+
    my $url = $VetstoriaBase . $HospitalSiteHash . '/';
    my $json = "{\"c_id\":\"$PMS_Client_Id\", \"p_id\":\"$PMS_Patient_Id\"}";
    print "json: $json\n" if $Debugging;
@@ -56,7 +57,7 @@ sub CreateURL {
    print "encrypted json: $json\n" if $Debugging;
    $json = encode_base64url($json);
    print "encrypted json base 64: $json\n" if $Debugging;
-   
+
    return $url . $json;
 }
 #=======================================================================
@@ -64,7 +65,7 @@ sub CreateURL {
 
 sub DecodeURL {
    my ($self, $url) = @_;
-   
+
    my ($hospital, $json) = (split(/\//, $url, 5)) [3..4];
 
    print "hospital = $hospital\n" if $Debugging;
@@ -77,7 +78,7 @@ sub DecodeURL {
    print "json = $json\n" if $Debugging;
    $json =~ /"c_id":"([^"]*)", "p_id":"([^"]*?)"/;
    return ($hospital, $1, $2);
-   
+
 }
 #=======================================================================
 
@@ -96,7 +97,7 @@ foreach my $arg (@ARGV) {
       }
       elsif ($arg eq '--include_reason') {
          $options{include_reason} = 1;
-      } 
+      }
       else {
          print "ERR: Illegal command line option '$arg'\n";
          exit(1);
@@ -113,7 +114,7 @@ unless ((scalar(@vetstoria_params) == 2) || (scalar(@vetstoria_params) == 3)) {
 
 my ($hospital, $client, $patient) = (@vetstoria_params, '');
 
-my $vetstoria = Vetstoria->new();
+my $vetstoria = Vetstoria->new(\%options);
 
 my $long_url = $vetstoria->CreateURL($hospital, $client, $patient);
 
