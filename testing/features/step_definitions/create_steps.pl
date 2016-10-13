@@ -7,10 +7,22 @@ use lib '../lib';
 use Vetstoria;
 
 my $vetstoria = undef;
+my $hospital_hash = undef;
+my $vetstoria_url = undef;
 
 Given qr/a usable (\S+) module/, sub {
    $vetstoria = Vetstoria->new();
    use_ok( $1 );
+};
+
+Given qr/the hospital hash is "([^"]*)"/, sub {
+   $hospital_hash = $1;
+   ok $hospital_hash, "got hospital_hash";
+};
+
+Given qr/the web site in the url is "([^"]*)"/, sub {
+   $vetstoria_url = $1;
+   ok $vetstoria_url, "got vetstoria_url";
 };
 
 When qr/given the client and patient parameters "([^"]*)" and ((.*))/, func($c) {
@@ -21,7 +33,13 @@ When qr/given the client and patient parameters "([^"]*)" and ((.*))/, func($c) 
    #print "client = $client\n";
    #print "patients = $patient_list\n";
    my @patients = split(/,/, $patient_list);
-   my $url = $vetstoria->CreateURL("577bbe97a7115", $client, [ @patients ]);    
+   my $url = $vetstoria->CreateURL($hospital_hash, $client, [ @patients ]);    
+   if (substr($url, 0, length($vetstoria_url)) ne $vetstoria_url) {
+      fail "The vetstoria url is incorrect, saw '" . substr($url, 0, length($vetstoria_url)) . "'";
+   }
+   if ((split(/\//, $url))[3] ne $hospital_hash) {
+      fail "the hospital hash is incorrect, saw " . (split(/\//, $url))[3];
+   }
    $c->stash->{scenario}->{encoded_url} = $url;
    ok $url, "got url";
 };

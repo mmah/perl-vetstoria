@@ -15,7 +15,16 @@ my $Use_V2 = 1;
 my $Include_Reason = 0;
 
 sub new {
-   my ($class) = @_;
+   my ($class, $options) = @_;
+
+   if (defined($options)) {
+      $Debugging       = $options->{debug}          if (exists($options->{debug}));
+      $Use_V2          = $options->{use_v2}         if (exists($options->{use_v2}));
+      $Include_Reason  = $options->{include_reason} if (exists($options->{include_reason}));
+      if (exists($options->{TestMode}) && ($options->{TestMode})) {
+         $VetstoriaBase = $VetstoriaBase_Test;
+      }
+   }
 
    my $self = {
       cipher    => Crypt::CBC->new( -key            => $EncryptionKey,

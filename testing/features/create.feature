@@ -4,6 +4,8 @@ Feature: Translate multiple clients and patients to a Vetstoria V2.0 URL
          
   Background:
     Given a usable Vetstoria module
+    Given that the hospital hash is "577bbe97a7115"
+    Given that the web site in the url is "https://nva.vetstoria.com"
 
   Scenario: Translate an example client/patient information to a Vetstoria URL.  This is a single pet which is repeated due to multiple reminder services.
     When given the client and patient parameters "22593" and ("48815:37","48815:C302","48815:V199")

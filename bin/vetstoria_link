@@ -84,13 +84,34 @@ sub DecodeURL {
 
 1;
 
+my @vetstoria_params = ();
+my %options = ();
 
-unless ((scalar(@ARGV) == 2) || (scalar(@ARGV) == 3)) {
+
+foreach my $arg (@ARGV) {
+   if (substr($arg, 0, 2) eq '--') {
+      $arg = lc($arg);
+      if ($arg eq '--test') {
+         $options{test} = 1;
+      }
+      elsif ($arg eq '--include_reason') {
+         $options{include_reason} = 1;
+      } 
+      else {
+         print "ERR: Illegal command line option '$arg'\n";
+         exit(1);
+      }
+   } else {
+      push @vetstoria_params, ($arg);
+   }
+}
+
+unless ((scalar(@vetstoria_params) == 2) || (scalar(@vetstoria_params) == 3)) {
    print "ERR: Usage is $0 {hospital_code} {pms_client_code} [{pms_client_code}]\n";
    exit(1);
 }
 
-my ($hospital, $client, $patient) = (@ARGV, '');
+my ($hospital, $client, $patient) = (@vetstoria_params, '');
 
 my $vetstoria = Vetstoria->new();
 
