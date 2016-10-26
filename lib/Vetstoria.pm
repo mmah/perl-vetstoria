@@ -98,7 +98,8 @@ sub CreateURL {
    if ($Use_V2) {
       $pet_element = "\"pets\":[ " . join(', ', @patient_list) . " ]" if scalar(@patient_list) > 0;
    } else {
-      $pet_element = "\"p_id\":\"" . shift(keys(%patient_ids)) . "\"";
+      my @patients = keys(%patient_ids);
+      $pet_element = "\"p_id\":\"" . shift(@patients) . "\"";
    }
    #print "Finished pet_element '$pet_element'\n";
       
